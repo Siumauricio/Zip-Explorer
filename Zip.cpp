@@ -21,21 +21,11 @@ void Zip::HeaderFileLocal(string Filename) {
     while(posicionRecorrido<=posicionFinal){
         Archivo.read ((char*)&Header, sizeof (LocalFileHeader));
         ImprimirLocalHeader(Archivo);
-
         PrintDataDescriptor(Archivo);
         posicionRecorrido=Archivo.tellg();
     }
-
-
-
-
-
-
-    cout<<Archivo.tellg()<<endl;
     Archivo.close();
 }
-
-
 
 void Zip::ImprimirLocalHeader(ifstream &Archivo) {
 
