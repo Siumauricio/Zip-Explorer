@@ -19,6 +19,7 @@ private:
     //END DIRECTORY
     EndDirectory EndHeader;
     DataEnd EndInfo;
+    int cantidadDirs;
 public:
     Zip();
     void HeaderFileLocal(string);
