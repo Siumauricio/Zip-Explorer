@@ -14,46 +14,63 @@ void Zip::HeaderFileLocal(string Filename) {
     if(Archivo.fail()){
         return;
     }
-    Archivo.seekg (0, ios_base::end);
-    int posicionFinal=Archivo.tellg();
-    int posicionRecorrido=0;
     Archivo.seekg (0, ios_base::beg);
-    while(posicionRecorrido<=posicionFinal){
-        Archivo.read ((char*)&Header, sizeof (LocalFileHeader));
+
+
+
+  //  while(Archivo.tellg()!=-1){
+    ImprimirLocalHeader(Archivo);
+    while(isDirectory()){
         ImprimirLocalHeader(Archivo);
-        PrintDataDescriptor(Archivo);
-        posicionRecorrido=Archivo.tellg();
+        ImprimirDataDescriptor(Archivo);
     }
+    ImprimirLocalHeader(Archivo);
+    while(isDirectory()){
+        ImprimirLocalHeader(Archivo);
+        ImprimirDataDescriptor(Archivo);
+    }
+    ImprimirLocalHeader(Archivo);
+    cout<<Archivo.tellg()<<endl;
+
+    ImprimirCentralDirectory(Archivo);
+    ImprimirCentralDirectory(Archivo);
+    ImprimirCentralDirectory(Archivo);
+    ImprimirCentralDirectory(Archivo);
+    ImprimirCentralDirectory(Archivo);
+
+    ImprimirEndDirectory(Archivo);
     Archivo.close();
 }
 
-void Zip::ImprimirLocalHeader(ifstream &Archivo) {
 
+
+void Zip::ImprimirLocalHeader(ifstream &Archivo) {
+    Archivo.read ((char*)&LocalHeader, sizeof (LocalFileHeader));
     cout<<"**************LOCAL FILE HEADER**************"<<endl;
-    cout<<"Signature: "<<Header.signature<<endl;
-    cout<<"versionToExtract: "<<Header.versionToExtract<<endl;
-    cout<<"generalPurposeBitFlag: "<<Header.generalPurposeBitFlag<<endl;
-    cout<<"compressionMethod: "<<Header.compressionMethod<<endl;
-    cout<<"modificationTime: "<<Header.modificationTime<<endl;
-    cout<<"modificationDate: "<<Header.modificationDate<<endl;
-    cout<<"crc32: "<<Header.crc32<<endl;
-    cout<<"compressedSize: "<<Header.compressedSize<<endl;
-    cout<<"uncompressedSize: "<<Header.uncompressedSize<<endl;
-    cout<<"filenameLength: "<<Header.filenameLength<<endl;
-    cout<<"extraFieldLength: "<<Header.extraFieldLength<<endl;
-    int espacioR=Header.filenameLength+Header.extraFieldLength;
+    cout<<"Signature: "<<LocalHeader.signature<<endl;
+    cout<<"versionToExtract: "<<LocalHeader.versionToExtract<<endl;
+    cout<<"generalPurposeBitFlag: "<<LocalHeader.generalPurposeBitFlag<<endl;
+    cout<<"compressionMethod: "<<LocalHeader.compressionMethod<<endl;
+    cout<<"modificationTime: "<<LocalHeader.modificationTime<<endl;
+    cout<<"modificationDate: "<<LocalHeader.modificationDate<<endl;
+    cout<<"crc32: "<<LocalHeader.crc32<<endl;
+    cout<<"compressedSize: "<<LocalHeader.compressedSize<<endl;
+    cout<<"uncompressedSize: "<<LocalHeader.uncompressedSize<<endl;
+    cout<<"filenameLength: "<<LocalHeader.filenameLength<<endl;
+    cout<<"extraFieldLength: "<<LocalHeader.extraFieldLength<<endl;
+    int espacioR=LocalHeader.filenameLength+LocalHeader.extraFieldLength;
     char *data=new char[espacioR];
 
-    dataInfo.Filename=new char[Header.filenameLength];
-    Archivo.read(data,Header.filenameLength);
-    memcpy(dataInfo.Filename,data,Header.filenameLength);
+    LocalInfo.Filename=new char[LocalHeader.filenameLength];
+    Archivo.read(data,LocalHeader.filenameLength);
+    memcpy(LocalInfo.Filename,data,LocalHeader.filenameLength);
 
-    dataInfo.extraField=new char[Header.extraFieldLength];
-    Archivo.read(data,Header.extraFieldLength);
-    memcpy(dataInfo.extraField,data,Header.extraFieldLength);
+    LocalInfo.extraField=new char[LocalHeader.extraFieldLength];
+    Archivo.read(data,LocalHeader.extraFieldLength);
+    memcpy(LocalInfo.extraField,data,LocalHeader.extraFieldLength);
 
-    cout<<"Filename: "<<dataInfo.Filename<<endl;
-    cout<<"ExtraField: "<<dataInfo.extraField<<endl;
+    cout<<"Filename: "<<LocalInfo.Filename<<endl;
+    cout<<"ExtraField: "<<LocalInfo.extraField<<endl;
     cout<<"******************************************\n"<<endl;
 }
 
@@ -76,9 +93,9 @@ void Zip::getDataDescriptor(ifstream &Archivo) {
     }
 }
 
-void Zip::PrintDataDescriptor(ifstream &Archivo) {
+void Zip::ImprimirDataDescriptor(ifstream &Archivo) {
     getDataDescriptor(Archivo);
-    Archivo.read((char*)&dataD,sizeof(dataDescriptor));
+    Archivo.read((char*)&dataD,sizeof(DataDescriptor));
     cout<<"**************DATA DESCRIPTOR**************"<<endl;
     cout<<"crc32: "<<dataD.crc32<<endl;
     cout<<"compressedSize: "<<dataD.compressedSize<<endl;
@@ -86,3 +103,75 @@ void Zip::PrintDataDescriptor(ifstream &Archivo) {
     cout<<"******************************************\n"<<endl;
 }
 
+void Zip::ImprimirCentralDirectory(ifstream &Archivo) {
+    Archivo.read ((char*)&CentralHeader, sizeof (CentralDirectory));
+    cout<<"**************CENTRAL DIRECTORY**************"<<endl;
+    cout<<"signature: "<<CentralHeader.signature<<endl;
+    cout<<"versionMadeby: "<<CentralHeader.versionMadeby<<endl;
+    cout<<"versionToExtract: "<<CentralHeader.versionToExtract<<endl;
+    cout<<"generalPurposeBitFlag: "<<CentralHeader.generalPurposeBitFlag<<endl;
+    cout<<"compressionMethod: "<<CentralHeader.compressionMethod<<endl;
+    cout<<"modificationTime: "<<CentralHeader.modificationTime<<endl;
+    cout<<"modificationDate: "<<CentralHeader.modificationDate<<endl;
+    cout<<"crc32: "<<CentralHeader.crc32<<endl;
+    cout<<"compressedSize: "<<CentralHeader.compressedSize<<endl;
+    cout<<"uncompressedSize: "<<CentralHeader.uncompressedSize<<endl;
+    cout<<"filenameLength: "<<CentralHeader.filenameLength<<endl;
+    cout<<"extraFieldLength: "<<CentralHeader.extraFieldLength<<endl;
+    cout<<"fileComentlength: "<<CentralHeader.fileComentlength<<endl;
+    cout<<"diskNumberStarts: "<<CentralHeader.diskNumberStarts<<endl;
+    cout<<"internalFileAttributes: "<<CentralHeader.internalFileAttributes<<endl;
+    cout<<"externalFileAttributes: "<<CentralHeader.externalFileAttributes<<endl;
+    cout<<"offsetLocalHeader: "<<CentralHeader.offsetLocalHeader<<endl;
+    int espacioR=CentralHeader.filenameLength+CentralHeader.extraFieldLength+CentralHeader.fileComentlength;
+    char *data=new char[espacioR];
+
+    CentralInfo.Filename=new char[CentralHeader.filenameLength];
+    Archivo.read(data,CentralHeader.filenameLength);
+    memcpy(CentralInfo.Filename,data,CentralHeader.filenameLength);
+
+    CentralInfo.extraField=new char[CentralHeader.extraFieldLength];
+    Archivo.read(data,CentralHeader.extraFieldLength);
+    memcpy(CentralInfo.extraField,data,CentralHeader.extraFieldLength);
+
+    CentralInfo.FileComment=new char[CentralHeader.fileComentlength];
+    Archivo.read(data,CentralHeader.fileComentlength);
+    memcpy(CentralInfo.FileComment,data,CentralHeader.fileComentlength);
+
+    cout<<"Filename: "<<CentralInfo.Filename<<endl;
+    cout<<"ExtraField: "<<CentralInfo.extraField<<endl;
+    cout<<"FileComment: "<<CentralInfo.FileComment<<endl;
+    cout<<"*********************************************"<<endl;
+}
+
+bool Zip::isDirectory() {
+    string filename=LocalInfo.Filename;
+    return filename[filename.length()-1] == '/';
+}
+
+bool Zip::isFile() {
+    string filename=LocalInfo.Filename;
+    return filename[filename.length()-1] != '/';
+}
+
+void Zip::ImprimirEndDirectory(ifstream &Archivo) {
+    Archivo.read ((char*)&EndHeader, sizeof (EndDirectory));
+    cout<<"**************END DIRECTORY**************"<<endl;
+    cout<<"Signature: "<<EndHeader.signature<<endl;
+    cout<<"numberDisk: "<<EndHeader.numberDisk<<endl;
+    cout<<"DiskWhereStarts: "<<EndHeader.DiskWhereStarts<<endl;
+    cout<<"numberCentralDirectory: "<<EndHeader.numberCentralDirectory<<endl;
+    cout<<"totalNumberDirectory: "<<EndHeader.totalNumberDirectory<<endl;
+    cout<<"sizeofDirectory: "<<EndHeader.sizeofDirectory<<endl;
+    cout<<"offsetDirectory: "<<EndHeader.offsetDirectory<<endl;
+    cout<<"commentLength: "<<EndHeader.commentLength<<endl;
+
+    int espacioR=EndHeader.commentLength;
+    char *data=new char[espacioR];
+
+    EndInfo.comment=new char[EndHeader.commentLength];
+    Archivo.read(data,EndHeader.commentLength);
+    memcpy(EndInfo.comment,data,EndHeader.commentLength);
+    cout<<"comment: "<<  EndInfo.comment<<endl;
+    cout<<"*********************************************"<<endl;
+}
