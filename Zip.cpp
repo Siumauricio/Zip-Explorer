@@ -5,8 +5,10 @@
 #include <iostream>
 #include <sstream>
 
+
+int x1=0;
 using namespace std;
-Zip::Zip() {}
+Zip::Zip() {cantidadDirs=0;}
 
 void Zip::HeaderFileLocal(string Filename) {
     ifstream Archivo;
@@ -15,30 +17,36 @@ void Zip::HeaderFileLocal(string Filename) {
         return;
     }
     Archivo.seekg (0, ios_base::beg);
-
-
-
-  //  while(Archivo.tellg()!=-1){
-    ImprimirLocalHeader(Archivo);
-    while(isDirectory()){
+    int pos=0;
+    while(1){
+        pos=Archivo.tellg();
         ImprimirLocalHeader(Archivo);
-        ImprimirDataDescriptor(Archivo);
-    }
-    ImprimirLocalHeader(Archivo);
-    while(isDirectory()){
-        ImprimirLocalHeader(Archivo);
-        ImprimirDataDescriptor(Archivo);
-    }
-    ImprimirLocalHeader(Archivo);
-    cout<<Archivo.tellg()<<endl;
 
-    ImprimirCentralDirectory(Archivo);
-    ImprimirCentralDirectory(Archivo);
-    ImprimirCentralDirectory(Archivo);
-    ImprimirCentralDirectory(Archivo);
-    ImprimirCentralDirectory(Archivo);
-
+        if(isDirectory()){
+            pos=Archivo.tellg();
+            ImprimirLocalHeader(Archivo);
+            if(strcmp(LocalInfo.Filename,"")==0){
+                break;
+            }
+            if(isFile()){
+                ImprimirDataDescriptor(Archivo);
+            }
+        }else{
+            if(strcmp(LocalInfo.Filename,"")==0){
+                break;
+            }
+            if(isFile()){
+                ImprimirDataDescriptor(Archivo);
+            }
+        }
+    }
+    cantidadDirs--;
+    Archivo.seekg(pos,ios::beg);
+    while(cantidadDirs--){
+        ImprimirCentralDirectory(Archivo);
+    }
     ImprimirEndDirectory(Archivo);
+    cantidadDirs=0;
     Archivo.close();
 }
 
@@ -46,32 +54,43 @@ void Zip::HeaderFileLocal(string Filename) {
 
 void Zip::ImprimirLocalHeader(ifstream &Archivo) {
     Archivo.read ((char*)&LocalHeader, sizeof (LocalFileHeader));
-    cout<<"**************LOCAL FILE HEADER**************"<<endl;
-    cout<<"Signature: "<<LocalHeader.signature<<endl;
-    cout<<"versionToExtract: "<<LocalHeader.versionToExtract<<endl;
-    cout<<"generalPurposeBitFlag: "<<LocalHeader.generalPurposeBitFlag<<endl;
-    cout<<"compressionMethod: "<<LocalHeader.compressionMethod<<endl;
-    cout<<"modificationTime: "<<LocalHeader.modificationTime<<endl;
-    cout<<"modificationDate: "<<LocalHeader.modificationDate<<endl;
-    cout<<"crc32: "<<LocalHeader.crc32<<endl;
-    cout<<"compressedSize: "<<LocalHeader.compressedSize<<endl;
-    cout<<"uncompressedSize: "<<LocalHeader.uncompressedSize<<endl;
-    cout<<"filenameLength: "<<LocalHeader.filenameLength<<endl;
-    cout<<"extraFieldLength: "<<LocalHeader.extraFieldLength<<endl;
-    int espacioR=LocalHeader.filenameLength+LocalHeader.extraFieldLength;
-    char *data=new char[espacioR];
+    if(LocalHeader.signature!=67324752){
+        LocalInfo.Filename="";
+        cout<<"pase por aqui"<<endl;
+        cantidadDirs++;
+        return;
+    }
+        cout<<"**************LOCAL FILE HEADER**************"<<endl;
+        cout<<"Signature: "<<LocalHeader.signature<<endl;
+        cout<<"versionToExtract: "<<LocalHeader.versionToExtract<<endl;
+        cout<<"generalPurposeBitFlag: "<<LocalHeader.generalPurposeBitFlag<<endl;
+        cout<<"compressionMethod: "<<LocalHeader.compressionMethod<<endl;
+        cout<<"modificationTime: "<<LocalHeader.modificationTime<<endl;
+        cout<<"modificationDate: "<<LocalHeader.modificationDate<<endl;
+        cout<<"crc32: "<<LocalHeader.crc32<<endl;
+        cout<<"compressedSize: "<<LocalHeader.compressedSize<<endl;
+        cout<<"uncompressedSize: "<<LocalHeader.uncompressedSize<<endl;
+        cout<<"filenameLength: "<<LocalHeader.filenameLength<<endl;
+        cout<<"extraFieldLength: "<<LocalHeader.extraFieldLength<<endl;
+        int espacioR=LocalHeader.filenameLength;
+        int espacioR2=LocalHeader.extraFieldLength;
+        char *data=new char[espacioR];
+        char *data2=new char[espacioR2];
 
-    LocalInfo.Filename=new char[LocalHeader.filenameLength];
-    Archivo.read(data,LocalHeader.filenameLength);
-    memcpy(LocalInfo.Filename,data,LocalHeader.filenameLength);
+        LocalInfo.Filename=new char[LocalHeader.filenameLength];
+        Archivo.read(data,LocalHeader.filenameLength);
+        memcpy(LocalInfo.Filename,data,LocalHeader.filenameLength);
 
-    LocalInfo.extraField=new char[LocalHeader.extraFieldLength];
-    Archivo.read(data,LocalHeader.extraFieldLength);
-    memcpy(LocalInfo.extraField,data,LocalHeader.extraFieldLength);
+        LocalInfo.extraField=new char[LocalHeader.extraFieldLength];
+        Archivo.read(data2,LocalHeader.extraFieldLength);
+        memcpy(LocalInfo.extraField,data2,LocalHeader.extraFieldLength);
 
-    cout<<"Filename: "<<LocalInfo.Filename<<endl;
-    cout<<"ExtraField: "<<LocalInfo.extraField<<endl;
-    cout<<"******************************************\n"<<endl;
+        cout<<"Filename: "<<LocalInfo.Filename<<endl;
+        cout<<"ExtraField: "<<LocalInfo.extraField<<endl;
+        cout<<"******************************************\n"<<endl;
+
+        cantidadDirs++;
+
 }
 
 void Zip::getDataDescriptor(ifstream &Archivo) {
@@ -141,10 +160,11 @@ void Zip::ImprimirCentralDirectory(ifstream &Archivo) {
     cout<<"Filename: "<<CentralInfo.Filename<<endl;
     cout<<"ExtraField: "<<CentralInfo.extraField<<endl;
     cout<<"FileComment: "<<CentralInfo.FileComment<<endl;
-    cout<<"*********************************************"<<endl;
+    cout<<"*********************************************\n"<<endl;
 }
 
 bool Zip::isDirectory() {
+
     string filename=LocalInfo.Filename;
     return filename[filename.length()-1] == '/';
 }
