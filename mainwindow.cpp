@@ -12,6 +12,8 @@
 #include <QSplitter>
 #include <QMessageBox>
 #include "zip_explorer.h"
+#include <zlib.h>
+#include <JlCompress.h>
 #include <quazipfile.h>
 
 QString treeItemToFullPath(QTreeWidgetItem* treeItem);
@@ -44,21 +46,23 @@ QString treeItemToFullPath(QTreeWidgetItem* treeItem)
 void MainWindow::on_treeWidget_clicked(const QModelIndex &index)
 {
     QString item = ui->treeWidget->currentItem()->text(index.column());
-}
 
+}
+ QString nombreArchivo;
 void MainWindow::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 {
-   QTreeWidgetItem * prueba=item->parent();
-   if(prueba!=nullptr){
-        qDebug()<<treeItemToFullPath(item);
-   }
+   //QTreeWidgetItem * prueba=item->parent();
+    nombreArchivo=treeItemToFullPath(item);
+   qDebug()<<treeItemToFullPath(item);
+
 
 }
-
+QString actualZip;
 void MainWindow::on_actionopen_triggered()
 {
 
     QString file_name= QFileDialog::getOpenFileName(this, tr("Open File"),"/home/siumauricio/Escritorio",tr("Zip (*.zip)"),0,QFileDialog::DontUseNativeDialog);
+    actualZip=file_name;
     ZipExplorer *z=new ZipExplorer();
     z->HeaderFileLocal(file_name.toStdString());
     QTreeWidget *treeWidget = ui->treeWidget;/*
@@ -109,8 +113,18 @@ void MainWindow::on_actionopen_triggered()
 
 void MainWindow::on_actionclose_triggered()
 {
-     ui->treeWidget->clear();
+      ui->treeWidget->clear();
       ui->treeWidget->clearMask();
-       ui->treeWidget->clearFocus();
+      ui->treeWidget->clearFocus();
       ui->treeWidget->clearSelection();
+}
+
+void MainWindow::on_actionextract_triggered()
+{
+   QString destino =  QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks|QFileDialog::DontUseNativeDialog);
+   if(actualZip!=""){
+       JlCompress:: extractDir (actualZip,destino);
+       QMessageBox::information(this,"Enhorabuena!","Archivo Descomprimido Correctamente!");
+    }
+
 }
