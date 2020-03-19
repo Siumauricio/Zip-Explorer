@@ -57,25 +57,27 @@ void MainWindow::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
 
 void MainWindow::on_actionopen_triggered()
 {
-    QString file_name=QFileDialog::getOpenFileName(this,"Open a File","//home//siumauricio//Escritorio");
 
-    ZipExplorer z;
-    z.HeaderFileLocal(file_name.toStdString());
-    QTreeWidget *treeWidget = ui->treeWidget;
+    QString file_name= QFileDialog::getOpenFileName(this, tr("Open File"),"/home/siumauricio/Escritorio",tr("Zip (*.zip)"),0,QFileDialog::DontUseNativeDialog);
+    ZipExplorer *z=new ZipExplorer();
+    z->HeaderFileLocal(file_name.toStdString());
+    QTreeWidget *treeWidget = ui->treeWidget;/*
+    const QString s1 = "/16Bits.zip/24Bits2/test.txt";
+        const QString s2 = "/hola";*/
+    QStringList fileNames =z->getZipSystem();
 
-    QStringList fileNames= z.getZipSystem();
     QTreeWidgetItem *topLevelItem = NULL;
 
     foreach (const QString &fileName, fileNames) {
          QStringList splitFileName = fileName.split("/");
          if (treeWidget->findItems(splitFileName[0], Qt::MatchFixedString).isEmpty())
          {
-             topLevelItem = new QTreeWidgetItem;
-             topLevelItem->setText(0, splitFileName[0]);
-             treeWidget->addTopLevelItem(topLevelItem);
-             topLevelItem->setIcon(0,QIcon("/home/siumauricio/Escritorio/ImagenZip/Dirs-Files/folder.png"));
-         }
+                 topLevelItem = new QTreeWidgetItem;
+                 topLevelItem->setText(0, splitFileName[0]);
+                 treeWidget->addTopLevelItem(topLevelItem);
+                 topLevelItem->setIcon(0,QIcon("/home/siumauricio/Escritorio/ImagenZip/Dirs-Files/folder.png"));
 
+         }
          QTreeWidgetItem *parentItem = topLevelItem;
          for (int i = 1; i < splitFileName.size() - 1; ++i)
          {
@@ -100,11 +102,15 @@ void MainWindow::on_actionopen_triggered()
          QTreeWidgetItem *childItem = new QTreeWidgetItem(parentItem);
          childItem->setText(0, splitFileName.last());
          childItem->setIcon(0,QIcon("/home/siumauricio/Escritorio/ImagenZip/Dirs-Files/files.png"));
-       }
+
+    }
 
 }
 
 void MainWindow::on_actionclose_triggered()
 {
      ui->treeWidget->clear();
+      ui->treeWidget->clearMask();
+       ui->treeWidget->clearFocus();
+      ui->treeWidget->clearSelection();
 }
