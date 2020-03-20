@@ -1,13 +1,14 @@
-#include <string>
-#include "LocalFileHeader.h"
-#include "CentralDirectoryFile.h"
-#include "EndCentralDirectory.h"
-
+ #include <string>
+#include "localfileheader.h"
+#include "centraldirectoryfile.h"
+#include "endcentraldirectory.h"
+#include <QStringList>
 using namespace std;
 #ifndef ZIP_EXPLORER_H
 #define ZIP_EXPLORER_H
 
-class Zip {
+
+class ZipExplorer {
 private:
     //LOCAL HEADER
     LocalFileHeader LocalHeader;
@@ -20,17 +21,24 @@ private:
     EndDirectory EndHeader;
     DataEnd EndInfo;
     int cantidadDirs;
+    //GENERAL
+    QStringList zipSystem;
+
 public:
-    Zip();
+    string Local;
+    string Central;
+    string End;
+    ZipExplorer();
+    ~ZipExplorer();
     void HeaderFileLocal(string);
     void getDataDescriptor(ifstream&);
     bool isDirectory();
     bool isFile();
-
+    QStringList getZipSystem();
     void ImprimirLocalHeader(ifstream &);
     void ImprimirCentralDirectory(ifstream&);
     void ImprimirEndDirectory(ifstream&);
     void ImprimirDataDescriptor(ifstream&);
 };
-
 #endif //ZIP_EXPLORER_H
+
