@@ -11,85 +11,132 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+    /*
+    QuaZip archive("//home//siumauricio//Escritorio//16Bits.zip");
+    QString dir="24Bits2/Test1/cuadro.bmp";
 
-   //  QuaZip zip("//home//siumauricio//Escritorio//comandos.zip");
-     //zip.open(QuaZip::mdUnzip);
-
-        // extracts all files from the archive and saves
-        // them onto disk
-        //
-        // just a simple implementation for evaluation.
-        // error handling has not been implemented yet!
-     JlCompress asd;
-   //  QString abc=asd.extractFiles("//home//siumauricio//Escritorio//comandos.zip","comandos","//home//siumauricio//Escritorio//tes.txt");
+    //qDebug()<<splitFileName[splitFileName.size()-2];
 
 
-     // asd->extractFile(zip," ", "//home//siumauricio//Documentos");
+    qDebug()<<"***************************************************";
 
+        archive.open(QuaZip::mdUnzip);
+            for( bool f = archive.goToFirstFile(); f; f = archive.goToNextFile() ) {
 
+                QString filePath = archive.getCurrentFileName();
+                QuaZipFile zFile( archive.getZipName(), filePath );
+
+                zFile.open( QIODevice::ReadOnly );
+                // create a bytes array and write the file data into it
+                QByteArray ba = zFile.readAll();
+
+                 std::string checkFolder = zFile.getFileName().toStdString().substr (0,dir.length());
+
+                 if(checkFolder==dir.toStdString()){
+                     string str3=zFile.getFileName().toStdString();
+                     if(str3[str3.length()-1]!='/' &&dir==zFile.getFileName()){
+                         qDebug()<<zFile.getFileName();
+
+                         QStringList splitFileName = zFile.getFileName().split("/");
+                         QString nombreArchivo=splitFileName[splitFileName.length()-1];
+                         QFile outfile("//home//siumauricio//Documentos//"+nombreArchivo);
+                         outfile.open(QIODevice::WriteOnly);
+                         outfile.write(ba);
+                         return;
+                     }
+                     }
+                 }*/
 
 /*
-     if (zip.open(QuaZip::mdUnzip)) {
-
-
-         for (bool more = zip.goToFirstFile(); more; more = zip.goToNextFile()) {
-             // do something
-             qDebug() << zip.getCurrentFileName();
-             zip.getUnzFile();
-
-         }
-         if (zip.getZipErcomando para buscar archivo en linuxror() == UNZ_OK) {
-             // ok, there was no error
-         }
-     }
-
-*/
-
 QuaZip archive("//home//siumauricio//Escritorio//16Bits.zip");
-QFile outfile("//home//siumauricio//Escritorio//test23");
-int x=0;
+QString dir="24Bits2/Test1/24Bits2/Test1/prueba1";
 
-outfile.open(QIODevice::WriteOnly);
+//qDebug()<<splitFileName[splitFileName.size()-2];
+
+QString dst;
+qDebug()<<"***************************************************";
+
     archive.open(QuaZip::mdUnzip);
-        for( bool f = archive.goToFirstFile(); f; f = archive.goToNextFile() )
-        {
-            // set source file in archive
+        for( bool f = archive.goToFirstFile(); f; f = archive.goToNextFile() ) {
+
             QString filePath = archive.getCurrentFileName();
             QuaZipFile zFile( archive.getZipName(), filePath );
-            // open the source file
+
             zFile.open( QIODevice::ReadOnly );
             // create a bytes array and write the file data into it
             QByteArray ba = zFile.readAll();
-            qDebug()<<ba.size()<<endl;
-            // close the source file
-            if(x==0){
-               QDir().mkdir("MyFolder");
-                outfile.write(ba);
-                break;
-            }
-            zFile.close();
-            // set destination file
-            QFile dstFile( filePath );
-            // open the destination file
-            dstFile.open( QIODevice::WriteOnly | QIODevice::Text );
-            // write the data from the bytes array into the destination file
-            dstFile.write( ba.data() );
-            //close the destination file
-            dstFile.close();
-            x++;
-        }
 
+             std::string checkFolder = zFile.getFileName().toStdString().substr (0,dir.length());
 
+             if(checkFolder==dir.toStdString()){
+                 string str3=zFile.getFileName().toStdString();
+                 if(str3[str3.length()-1]!='/'){
+                     QStringList splitFileName = zFile.getFileName().split("/");
+                     QString nombreArchivo=splitFileName[splitFileName.length()-1];
+                     string text=dst.toStdString().substr(0,dst.length()-2);
+                     dst+=nombreArchivo;
+                     QFile outfile(dst);
+                     outfile.open(QIODevice::WriteOnly);
+                     outfile.write(ba);
+                 }else{
+                     bool flag=false;
+                     bool flag2=true;
+                     QString path;
+                    QStringList splitFileName = zFile.getFileName().split("/");
+                     QStringList splitDir = dir.split("/");
 
-    /*
-    JlCompress *asd;
-      QuaZip zip;
-      QString List=asd->extractFiles()
-      asd->extractDir("//home//siumauricio//Escritorio//24Bits2.zip", "//home//siumauricio//Documentos");
-    */
+                   qDebug()<<splitFileName[splitFileName.size()-2];
+                    for (int i = 0; i < splitFileName.size(); ++i) {
+                        if(splitFileName[i]==splitDir[splitDir.size()-1]&&flag2){
+                            flag2=false;
+                            flag=true;
+                        }
+                        if(flag){
+                            if(splitFileName[i]==""){
+                                  path+=splitFileName[i];
+
+                            }else{
+                               path+=splitFileName[i];
+                                 path+="//";
+                            }
+                        }
+                    }
+                 dst="//home//siumauricio//Documentos//"+path;
+                 qDebug()<<dst;
+                 QDir().mkdir("//home//siumauricio//Documentos//"+path);
+                 }
+             }
+        }*/
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
 
     return a.exec();
 }
+/*
+ *
+            if(x==2){
+
+                 // zFile.open( QIODevice::ReadOnly );
+              //  zFile.getZip();
+            // QDir().mkdir("//home//siumauricio//Documentos//test");
+              //  QFile outfile("//home//siumauricio//Documentos//test");
+
+
+                //outfile.open(QIODevice::WriteOnly);
+               // qDebug()<<ba.size()<<endl;
+              // outfile.write(ba);
+               //break;
+            }if(x==3){
+                // QFile outfile("//home//siumauricio//Documentos//test//cuadro.bmp");
+                 //outfile.open(QIODevice::WriteOnly);
+               //  qDebug()<<ba.size()<<endl;
+                // outfile.write(ba);
+            }
+QFile dstFile( filePath );
+// open the destination file
+dstFile.open( QIODevice::WriteOnly | QIODevice::Text );
+// write the data from the bytes array into the destination file
+// dstFile.write( ba.data() );
+//close the destination file
+dstFile.close();*/
