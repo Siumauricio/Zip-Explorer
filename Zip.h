@@ -36,7 +36,7 @@ public:
     bool isFile();
     QStringList getZipSystem();
     void ImprimirLocalHeader(ifstream &);
-    void ImprimirCentralDirectory(ifstream&);
+    void ImprimirCentralDirectory(ifstream&,string);
     void ImprimirEndDirectory(ifstream&);
     void ImprimirDataDescriptor(ifstream&);
 };
