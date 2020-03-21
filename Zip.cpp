@@ -12,6 +12,7 @@ ZipExplorer::ZipExplorer() {cantidadDirs=0;}
 ZipExplorer::~ZipExplorer(){}
 
 void ZipExplorer::HeaderFileLocal(string Filename) {
+    isDeflate=false;
     ifstream Archivo;
     Archivo.open (Filename, ifstream::in | ifstream::binary);
     if(Archivo.fail()){
@@ -58,7 +59,9 @@ void ZipExplorer::ImprimirLocalHeader(ifstream &Archivo) {
        //    qDebug()<< "Prueba "<<Name<<endl;
              zipSystem<<Name;
         }
-
+        if(LocalHeader.compressionMethod==8&&!isDeflate){
+            isDeflate=true;
+        }
         string Filename(LocalInfo.Filename);
         string ExtraField(LocalInfo.extraField);
         Local+= "********LOCAL FILE HEADER********\n"  "Signature: " +to_string(LocalHeader.signature)+"\n"+ "versionToExtract: "+to_string(LocalHeader.versionToExtract)+"\n"+ "generalPurposeBitFlag: "+to_string(LocalHeader.generalPurposeBitFlag)+"\n"+ "compressionMethod: "+to_string(LocalHeader.compressionMethod)+"\n"+ "modificationTime: "+to_string(LocalHeader.modificationTime)+"\n"+ "modificationDate: "+to_string(LocalHeader.modificationDate)+"\n"+ "crc32: "+to_string(LocalHeader.crc32)+"\n"+ "compressedSize: "+to_string(LocalHeader.compressedSize)+"\n"+ "uncompressedSize: "+to_string(LocalHeader.uncompressedSize)+"\n"+ "filenameLength: "+to_string(LocalHeader.filenameLength)+"\n"+ "extraFieldLength: "+to_string(LocalHeader.extraFieldLength)+"\n"+ "Filename: "+Filename+"\n"+ "ExtraField: "+ExtraField+"\n************************************\n\n";
@@ -150,6 +153,5 @@ void ZipExplorer::ImprimirEndDirectory(ifstream &Archivo) {
 
 
 QStringList ZipExplorer::getZipSystem(){
-
    return this->zipSystem;
 }
