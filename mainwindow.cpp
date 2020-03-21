@@ -21,7 +21,7 @@
 QString Local;
 QString Central;
 QString End;
-
+bool isDeflate;
 QString actualZip;
 QString nombreArchivo;
 QString tipo;
@@ -81,6 +81,7 @@ void MainWindow::on_actionopen_triggered()
     actualZip=file_name;
     ZipExplorer z;
     z.HeaderFileLocal(file_name.toStdString());
+    isDeflate=z.isDeflate;
     Local=QString::fromStdString(z.Local);
     Central=QString::fromStdString(z.Central);
     End=QString::fromStdString(z.End);
@@ -135,22 +136,27 @@ void MainWindow::on_actionclose_triggered()
       Local="";
       Central="";
       End="";
+      tipo="";
+      actualZip="";
 
 }
 
 void MainWindow::on_actionextract_triggered()
 {
-   QString destino =  QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks|QFileDialog::DontUseNativeDialog);
-   qDebug()<<destino;
-   if(nombreArchivo==""){
-       JlCompress:: extractDir (actualZip,destino);
-       QMessageBox::information(this,"Enhorabuena!","Archivo Descomprimido Correctamente!");
-   }else if(tipo=="DIR"){
-        extraerSubDir(nombreArchivo,destino);
-   }else if(tipo=="FILE"){
-        ExtraerFile(nombreArchivo,destino);
-   }
-
+    if(!isDeflate){
+         QMessageBox::information(this,"Error!","Error Formato No Soportado!");
+    }else{
+        QString destino =  QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks|QFileDialog::DontUseNativeDialog);
+        qDebug()<<destino;
+        if(nombreArchivo==""){
+            JlCompress:: extractDir (actualZip,destino);
+            //QMessageBox::information(this,"Enhorabuena!","Archivo Descomprimido Correctamente!");
+        }else if(tipo=="DIR"){
+             extraerSubDir(nombreArchivo,destino);
+        }else if(tipo=="FILE"){
+             ExtraerFile(nombreArchivo,destino);
+        }
+    }
 }
 
 void MainWindow::on_actioninfo_triggered()
@@ -165,7 +171,6 @@ void MainWindow::extraerSubDir(QString directorio,QString destino){
     QuaZip archive(actualZip);
     QString dir=QString::fromStdString(directorio.toStdString().substr(1,directorio.length()-1));
     QString dst;
-  ///  qDebug()<<"***************************************************";
 
         archive.open(QuaZip::mdUnzip);
             for( bool f = archive.goToFirstFile(); f; f = archive.goToNextFile() ) {
@@ -185,18 +190,18 @@ void MainWindow::extraerSubDir(QString directorio,QString destino){
                          QStringList splitFileName = zFile.getFileName().split("/");
                          QString nombreArchivo=splitFileName[splitFileName.length()-1];
                          string text=dst.toStdString().substr(0,dst.length()-2);
+                         QString path=dst;
                          dst+=nombreArchivo;
                          QFile outfile(dst);
                          outfile.open(QIODevice::WriteOnly);
                          outfile.write(ba);
+                         dst=path;
                      }else{
                          bool flag=false;
                          bool flag2=true;
                          QString path;
                         QStringList splitFileName = zFile.getFileName().split("/");
                          QStringList splitDir = dir.split("/");
-
-                     //  qDebug()<<splitFileName[splitFileName.size()-2];
                         for (int i = 0; i < splitFileName.size(); ++i) {
                             if(splitFileName[i]==splitDir[splitDir.size()-1]&&flag2){
                                 flag2=false;
