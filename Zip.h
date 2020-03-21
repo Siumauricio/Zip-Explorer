@@ -25,6 +25,7 @@ private:
     QStringList zipSystem;
 
 public:
+    bool isDeflate;
     string Local;
     string Central;
     string End;
