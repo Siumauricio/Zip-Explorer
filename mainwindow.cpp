@@ -167,62 +167,41 @@ void MainWindow::on_actioninfo_triggered()
    a->show();
 }
 
-void MainWindow::extraerSubDir(QString directorio,QString destino){
+void MainWindow::extraerSubDir(QString dir2,QString destino){
     QuaZip archive(actualZip);
-    QString dir=QString::fromStdString(directorio.toStdString().substr(1,directorio.length()-1));
-    QString dst;
+    archive.open(QuaZip::mdUnzip);
 
-        archive.open(QuaZip::mdUnzip);
-            for( bool f = archive.goToFirstFile(); f; f = archive.goToNextFile() ) {
+    dir2=QString::fromStdString(dir2.toStdString().substr(1,dir2.length()-1));
+    dir2+="/";
+    qDebug()<<dir2<< " "<<destino<<endl;
+    QString dir=dir2;
+     QStringList splitter=dir.split("/");
+     QString directorio=splitter[splitter.size()-2];
+     int cantidad=splitter.size()-1;
 
-                QString filePath = archive.getCurrentFileName();
-                QuaZipFile zFile( archive.getZipName(), filePath );
+     QStringList lista=archive.getFileNameList();
 
-                zFile.open( QIODevice::ReadOnly );
-                // create a bytes array and write the file data into it
-                QByteArray ba = zFile.readAll();
+    const QString substring(directorio);
 
-                 std::string checkFolder = zFile.getFileName().toStdString().substr (0,dir.length());
-                    cout<<checkFolder<<endl;
-                 if(checkFolder==dir.toStdString()){
-                     string str3=zFile.getFileName().toStdString();
-                     if(str3[str3.length()-1]!='/'){
-                         QStringList splitFileName = zFile.getFileName().split("/");
-                         QString nombreArchivo=splitFileName[splitFileName.length()-1];
-                         string text=dst.toStdString().substr(0,dst.length()-2);
-                         QString path=dst;
-                         dst+=nombreArchivo;
-                         QFile outfile(dst);
-                         outfile.open(QIODevice::WriteOnly);
-                         outfile.write(ba);
-                         dst=path;
-                     }else{
-                         bool flag=false;
-                         bool flag2=true;
-                         QString path;
-                        QStringList splitFileName = zFile.getFileName().split("/");
-                         QStringList splitDir = dir.split("/");
-                        for (int i = 0; i < splitFileName.size(); ++i) {
-                            if(splitFileName[i]==splitDir[splitDir.size()-1]&&flag2){
-                                flag2=false;
-                                flag=true;
-                            }
-                            if(flag){
-                                if(splitFileName[i]==""){
-                                      path+=splitFileName[i];
-
-                                }else{
-                                   path+=splitFileName[i];
-                                     path+="/";
-                                }
-                            }
-                        }
-                     dst=destino+"/"+path;
-                   // qDebug()<<dst;
-                     QDir().mkdir(destino+"/"+path);
-                     }
+       for (int i = 0; i < lista.size(); ++i) {
+             int existe=lista[i].split("/").size();
+             if(cantidad<existe){
+                 if(lista[i].split("/")[splitter.size()-2]==directorio){
+                      QByteArray data = recibirData(lista[i]);
+                      if(isDir(lista[i])){
+                           QDir().mkdir(destino+"/"+lista[i].mid(lista[i].indexOf(substring)));
+                           //  qDebug()<<"//home//siumauricio//Documentos//"+lista[i].mid(lista[i].indexOf(substring));
+                      }else{
+                          QFile outfile(destino+"/"+lista[i].mid(lista[i].indexOf(substring)));
+                         // qDebug()<<"//home//siumauricio//Documentos//"+lista[i].mid(lista[i].indexOf(substring));
+                           outfile.open(QIODevice::WriteOnly);
+                          outfile.write(data);
+                      }
                  }
-            }
+             }
+         }
+
+
 }
 
 void MainWindow::ExtraerFile(QString file,QString dst){
@@ -261,3 +240,29 @@ void MainWindow::ExtraerFile(QString file,QString dst){
           }
 
 }
+
+
+QByteArray MainWindow::recibirData(QString path){
+       QuaZip archive("//home//siumauricio//Escritorio//7zip.zip");
+      archive.open(QuaZip::mdUnzip);
+           qDebug()<<"***************************************************";
+              for( bool f = archive.goToFirstFile(); f; f = archive.goToNextFile() ) {
+                  QString filePath = archive.getCurrentFileName();
+                  QuaZipFile zFile( archive.getZipName(), filePath );
+                  zFile.open( QIODevice::ReadOnly );
+                  // create a bytes array and write the file data into it
+                  QByteArray ba = zFile.readAll();
+                  if(path==zFile.getFileName()){
+                     // qDebug()<<zFile.getFileName();
+                      return ba;
+                  }
+              }
+           }
+
+bool MainWindow::isDir(QString nombre)
+{
+     return nombre.toStdString()[nombre.length()-1]=='/';
+}
+
+
+
