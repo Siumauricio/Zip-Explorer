@@ -22,7 +22,8 @@ public:
     ~MainWindow();
 
 private slots:
-
+QByteArray recibirData(QString);
+bool isDir(QString);
 void on_treeWidget_clicked(const QModelIndex &index);
 void extraerSubDir(QString,QString);
 void ExtraerFile(QString , QString);
