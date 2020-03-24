@@ -1,4 +1,4 @@
- #include <string>
+#include <string>
 #include "localfileheader.h"
 #include "centraldirectoryfile.h"
 #include "endcentraldirectory.h"
@@ -23,16 +23,16 @@ private:
     int cantidadDirs;
     //GENERAL
     QStringList zipSystem;
-
 public:
     bool isDeflate;
+    bool hasData;
     string Local;
     string Central;
     string End;
     ZipExplorer();
     ~ZipExplorer();
     void HeaderFileLocal(string);
-    void getDataDescriptor(ifstream&);
+    uint8_t getDataDescriptor(ifstream&);
     bool isDirectory();
     bool isFile();
     QStringList getZipSystem();
