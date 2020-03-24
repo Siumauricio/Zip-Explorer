@@ -13,6 +13,7 @@ ZipExplorer::~ZipExplorer(){}
 
 void ZipExplorer::HeaderFileLocal(string Filename) {
     isDeflate=false;
+    hasData=false;
     ifstream Archivo;
     Archivo.open (Filename, ifstream::in | ifstream::binary);
     if(Archivo.fail()){
@@ -62,6 +63,7 @@ void ZipExplorer::ImprimirLocalHeader(ifstream &Archivo) {
         if(LocalHeader.compressionMethod==8&&!isDeflate){
             isDeflate=true;
         }
+
         string Filename(LocalInfo.Filename);
         string ExtraField(LocalInfo.extraField);
         Local+= "********LOCAL FILE HEADER********\n"  "Signature: " +to_string(LocalHeader.signature)+"\n"+ "versionToExtract: "+to_string(LocalHeader.versionToExtract)+"\n"+ "generalPurposeBitFlag: "+to_string(LocalHeader.generalPurposeBitFlag)+"\n"+ "compressionMethod: "+to_string(LocalHeader.compressionMethod)+"\n"+ "modificationTime: "+to_string(LocalHeader.modificationTime)+"\n"+ "modificationDate: "+to_string(LocalHeader.modificationDate)+"\n"+ "crc32: "+to_string(LocalHeader.crc32)+"\n"+ "compressedSize: "+to_string(LocalHeader.compressedSize)+"\n"+ "uncompressedSize: "+to_string(LocalHeader.uncompressedSize)+"\n"+ "filenameLength: "+to_string(LocalHeader.filenameLength)+"\n"+ "extraFieldLength: "+to_string(LocalHeader.extraFieldLength)+"\n"+ "Filename: "+Filename+"\n"+ "ExtraField: "+ExtraField+"\n************************************\n\n";
@@ -69,7 +71,7 @@ void ZipExplorer::ImprimirLocalHeader(ifstream &Archivo) {
 
 }
 
-void ZipExplorer::getDataDescriptor(ifstream &Archivo) {
+uint8_t ZipExplorer::getDataDescriptor(ifstream &Archivo) {
     uint8_t i = 0;
     while (1) {
         Archivo.read((char *) &i, 1);
@@ -77,11 +79,11 @@ void ZipExplorer::getDataDescriptor(ifstream &Archivo) {
             Archivo.read((char *) &i, 1);
             if ((int) i == 75) {
                 Archivo.read((char *) &i, 1);
-                if ((int) i == 3||(int) i==1) {
+                if ((int) i == 3||(int) i==1||(int)i==7) {
                     Archivo.read((char *) &i, 1);
-                    if ((int) i == 4||(int)i==2) {
-
-                        break;
+                    if ((int) i == 4||(int)i==2||(int)i==8) {
+                        qDebug()<<i;
+                        return i;
                     }
                 }
             }
@@ -92,11 +94,15 @@ void ZipExplorer::getDataDescriptor(ifstream &Archivo) {
 
 void ZipExplorer::ImprimirDataDescriptor(ifstream &Archivo) {
 
-    getDataDescriptor(Archivo);
+    uint8_t hasData=getDataDescriptor(Archivo);
     int x=Archivo.tellg();
     Archivo.seekg(x-4,ios::beg);
-   // Local+="**********DATA DESCRIPTOR**********\n" "crc32: "+to_string(dataD.crc32)+"\n" +"compressedSize: "+to_string(dataD.compressedSize)+"\n" +"uncompressedSize: "+to_string(dataD.uncompressedSize)+"\n**************************************\n\n";
 
+    if((int)hasData==8){
+        Archivo.read((char*)&dataD, sizeof(DataDescriptor));
+        cout<<dataD.signature<<" "<<dataD.crc32<<endl;
+        Local+="**********DATA DESCRIPTOR**********\n" "signature: "+to_string(dataD.signature)+"\n"+"crc32: "+to_string(dataD.crc32)+"\n" +"compressedSize: "+to_string(dataD.compressedSize)+"\n" +"uncompressedSize: "+to_string(dataD.uncompressedSize)+"\n**************************************\n\n";
+    }
 }
 
 void ZipExplorer::ImprimirCentralDirectory(ifstream &Archivo,string Filename) {
@@ -126,8 +132,10 @@ void ZipExplorer::ImprimirCentralDirectory(ifstream &Archivo,string Filename) {
     CentralInfo.FileComment=new char[CentralHeader.fileComentlength];
     Archivo.read(data,CentralHeader.fileComentlength);
     memcpy(CentralInfo.FileComment,data,CentralHeader.fileComentlength);
-
-       Central+="**********CENTRAL DIRECTORY**********\n" "signature: "+to_string(CentralHeader.signature)+"\n" +"versionMadeby: "+to_string(CentralHeader.versionMadeby)+"\n" +"generalPurposeBitFlag: "+to_string(CentralHeader.generalPurposeBitFlag)+"\n" +"compressionMethod: "+to_string(CentralHeader.compressionMethod)+"\n" +"modificationTime: "+to_string(CentralHeader.modificationTime)+"\n" +"modificationDate: "+to_string(CentralHeader.modificationDate)+"\n" +"crc32: "+to_string(CentralHeader.crc32)+"\n" +"compressedSize: "+to_string(CentralHeader.compressedSize)+"\n" +"uncompressedSize: "+to_string(CentralHeader.uncompressedSize)+"\n" +"filenameLength: "+to_string(CentralHeader.filenameLength)+ "\n"+"extraFieldLength: "+to_string(CentralHeader.extraFieldLength)+"\n"+"diskNumberStarts: "+to_string(CentralHeader.diskNumberStarts)+"\n"+"internalFileAttributes: "+to_string(CentralHeader.internalFileAttributes)+"\n"+"externalFileAttributes: "+to_string(CentralHeader.externalFileAttributes)+"\n"+"offsetLocalHeader: "+to_string(CentralHeader.offsetLocalHeader)+"\n**************************************\n\n";
+    string filename(CentralInfo.Filename);
+    string ExtraField(CentralInfo.extraField);
+      string FileComment(CentralInfo.FileComment);
+       Central+="**********CENTRAL DIRECTORY**********\n" "signature: "+to_string(CentralHeader.signature)+"\n" +"versionMadeby: "+to_string(CentralHeader.versionMadeby)+"\n" +"generalPurposeBitFlag: "+to_string(CentralHeader.generalPurposeBitFlag)+"\n" +"compressionMethod: "+to_string(CentralHeader.compressionMethod)+"\n" +"modificationTime: "+to_string(CentralHeader.modificationTime)+"\n" +"modificationDate: "+to_string(CentralHeader.modificationDate)+"\n" +"crc32: "+to_string(CentralHeader.crc32)+"\n" +"compressedSize: "+to_string(CentralHeader.compressedSize)+"\n" +"uncompressedSize: "+to_string(CentralHeader.uncompressedSize)+"\n" +"filenameLength: "+to_string(CentralHeader.filenameLength)+ "\n"+"extraFieldLength: "+to_string(CentralHeader.extraFieldLength)+"\n"+"diskNumberStarts: "+to_string(CentralHeader.diskNumberStarts)+"\n"+"internalFileAttributes: "+to_string(CentralHeader.internalFileAttributes)+"\n"+"externalFileAttributes: "+to_string(CentralHeader.externalFileAttributes)+"\n"+"offsetLocalHeader: "+to_string(CentralHeader.offsetLocalHeader)+"\n"+"filename: "+filename+"\n"+"extraField: "+ExtraField+"\n"+"FileComment: "+FileComment+"\n**************************************\n\n";
 }
 
 bool ZipExplorer::isDirectory() {
