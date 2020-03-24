@@ -14,41 +14,41 @@ using namespace std;
 int main()
 {
        QuaZip archive("//home//siumauricio//Escritorio//7zip.zip");
-       QString dir="16Bits/24Bits2/Test1/";
-        QStringList splitter=dir.split("/");
-        QString directorio=splitter[splitter.size()-2];
-        int cantidad=splitter.size()-1;
-         archive.open(QuaZip::mdUnzip);
-        QStringList lista=archive.getFileNameList();
-        //QString nombre="16Bits/24Bits2/Test1/24Bits2/";
+       archive.open(QuaZip::mdUnzip);
+       QString dir="/16Bits/24Bits2/Test1";
+       QStringList splitter=dir.split("/");
+       qDebug()<<splitter;
+       string parentstring = "/16Bits/24Bits2/Test1-";
+       QStringList lis= QString::fromStdString(parentstring).split("/");
+       string substring = lis[lis.size()-1].toStdString();
+       size_t index= parentstring.find(substring)-1;
+       cout<<substring<<endl;
 
-        const QString substring(directorio);
+       //qDebug()<<lis;
+
+        QString directorio=splitter[splitter.size()-1];
+        int cantidad=splitter.size()-1;
+
+        QStringList lista=archive.getFileNameList();
 
       for (int i = 0; i < lista.size(); ++i) {
             int existe=lista[i].split("/").size();
             if(cantidad<existe){
                 if(lista[i].split("/")[splitter.size()-2]==directorio){
-                     QByteArray data = recibirData(lista[i]);
+                    string recortada=lista[i].toStdString().substr(index,lista[i].length());
                      if(isDir(lista[i])){
-                          QDir().mkdir("//home//siumauricio//Documentos//"+lista[i].mid(lista[i].indexOf(substring)));
-                          //  qDebug()<<"//home//siumauricio//Documentos//"+lista[i].mid(lista[i].indexOf(substring));
+                         cout<<recortada<<endl;
+                       QDir().mkdir("//home//siumauricio//Documentos//"+QString::fromStdString(recortada));
                      }else{
-                         QFile outfile("//home//siumauricio//Documentos//"+lista[i].mid(lista[i].indexOf(substring)));
-                        // qDebug()<<"//home//siumauricio//Documentos//"+lista[i].mid(lista[i].indexOf(substring));
-                          outfile.open(QIODevice::WriteOnly);
-                         outfile.write(data);
+                       QByteArray data = recibirData(lista[i]);
+                       QFile outfile("//home//siumauricio//Documentos//"+QString::fromStdString(recortada));
+                       outfile.open(QIODevice::WriteOnly);
+                       outfile.write(data);
                      }
-
                 }
             }
         }
-
 }
-
-
-
-
-
 
 QByteArray recibirData(QString path){
        QuaZip archive("//home//siumauricio//Escritorio//7zip.zip");
@@ -61,13 +61,11 @@ QByteArray recibirData(QString path){
                   // create a bytes array and write the file data into it
                   QByteArray ba = zFile.readAll();
                   if(path==zFile.getFileName()){
-                     // qDebug()<<zFile.getFileName();
                       return ba;
-                  }
               }
-           }
+       }
+}
 
-bool isDir(QString nombre)
-{
+bool isDir(QString nombre) {
      return nombre.toStdString()[nombre.length()-1]=='/';
 }
